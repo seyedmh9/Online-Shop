@@ -1,0 +1,92 @@
+erDiagram
+    Product ||--o{ Orders : ManyToMany
+    customer ||--o{ Product : oneToMany
+    customer ||--o{ Feedback : ManyToOne
+    Orders ||--o{ Order-Details : OneToOne
+    Orders ||--o{ customer : ManyToOne  
+    Order-Details ||--o{ Product : ManyToMany
+    Categories ||--o{ Product : ManyToOne
+    Users ||--o{ customer : OneToOne
+    Payments ||--o{ Orders : OneToOne
+    Shipping-Addresses ||--o{ customer : ManyToOne
+    Shipping-Addresses ||--o{ customer : ManyToOne
+    Feedback ||--o{ Product : OneToMany
+    Feedback ||--o{ Orders : OneToOne
+    Admin-Logs ||--o{ Users : oneToMany
+    
+    Product {
+        INT product_id
+        VARCHAR(100) name 
+        TEXT description
+        DECIMAL(2-10) price
+        INT category_id
+    }
+    customer {
+        INT customer_id
+        VARCHAR(50) username
+        VARCHAR(100) email
+        VARCHAR(15) phone_number
+        DATE registration_date
+    }
+    Orders {
+        INT order_id 
+        INT customer_id 
+        DATETIME order_date
+        DECIMAL(2-10) total_amount
+        VARCHAR(20)  status 
+    }
+    Order-Details {
+        INT order_detail_id
+        INT order_id 
+        INT product_id 
+        INT quantity
+        DECIMAL(2-10) unit_price
+    }
+    Categories {
+        INT category_id 
+        VARCHAR(50) name 
+        TEXT description 
+        INT parent_category_id 
+        DATETIME  created_at
+    }
+    Users {
+        INT user_id 
+        VARCHAR(50) username  
+        VARCHAR(100) password_hash
+        VARCHAR(100) email 
+        VARCHAR(20) role 
+    }
+    Payments {
+        INT payment_id
+        INT order_id  
+        VARCHAR(50) payment_method 
+        DECIMAL(10-2) amount 
+        DATETIME payment_date  
+    }
+    Shipping-Addresses {
+        INT address_id
+        INT customer_id  
+        VARCHAR(100) recipient_name 
+        VARCHAR(255) address_line1 
+        VARCHAR(255) address_line2
+        VARCHAR(100) city
+        VARCHAR(100) state
+        VARCHAR(20) postal_code
+        VARCHAR(100) country
+    }
+    Feedback {
+        INT feedback_id
+        INT customer_id  
+        INT order_id 
+        INT rating 
+        TEXT comment
+        DATETIME feedback_date
+    }
+    Admin-Logs {
+        INT log_id
+        INT user_id  
+        VARCHAR(100) action 
+        DATETIME action_date 
+        VARCHAR(50) ip_address
+    }
+    
