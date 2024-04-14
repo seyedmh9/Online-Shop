@@ -171,7 +171,7 @@ def get_all_Categories():
 def create_Categories(name, description, parent_category_id):
     conn = get_db_connection()
     cur = conn.cursor()
-    created_at = datetime.today().strftime('%Y-%m-%d')
+    created_at = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
     cur.execute('INSERT INTO Categories (name, description,parent_category_id,created_at) VALUES (?, ?, ?, ?)', (name, description, parent_category_id, created_at))
     conn.commit()
     Category_id = cur.lastrowid
@@ -213,10 +213,6 @@ def list_Categories():
     response.headers['Access-Control-Expose-Headers'] = 'Content-Range'
     response.headers['Content-Range'] = len(Categories)
     return response
-
-# @app.route('/parent_categories', methods=['GET'])
-# def parent_categories():
-#     return "arr"
 
 @app.route('/Categories/<int:id>', methods=['GET'])
 def Category(id):
