@@ -241,6 +241,7 @@ def update_category_by_id(id):
     return jsonify(updated), 200
 
 #----------------category--------------------------
+
 #------------------order--------------------------
 #order crud function
 def get_all_orders():
