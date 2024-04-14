@@ -11,7 +11,8 @@ import {
     SearchInput,
     EmailField,
     DateField,
-    ReferenceField
+    ReferenceField,
+    ShowButton
 } from 'react-admin';
 import { Stack } from '@mui/material';
 
@@ -41,6 +42,7 @@ export const ShippingAddresses_List = () => (
             <TextField source="state" />
             <TextField source="postal_code" />
             <TextField source="country" />
+            <ShowButton label="Show"/>
         </Datagrid>
     </List>
 );
