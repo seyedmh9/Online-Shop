@@ -11,7 +11,8 @@ import {
   SearchInput,
   EmailField,
   DateField,
-  ReferenceField
+  ReferenceField,
+  ShowButton
 } from "react-admin";
 import { Stack } from "@mui/material";
 
@@ -37,6 +38,7 @@ export const Payment_list = () => (
       <TextField source="payment_method" />
       <TextField source="amount" />
       <TextField source="payment_date" />
+      <ShowButton label="Show"/>
     </Datagrid>
   </List>
 );
