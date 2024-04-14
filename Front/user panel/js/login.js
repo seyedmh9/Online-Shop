@@ -26,7 +26,7 @@ const submit_fn = (event) => {
     }else {
       document.getElementById("error_text").style.display = "none";
       document.getElementById("login-submit").style.backgroundColor = "green"
-      window.open('./t.html')
+      window.open('./home.html')
     }
   })
 };
