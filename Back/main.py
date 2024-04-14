@@ -13,7 +13,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 # Connect to the database
 def get_db_connection():
-    conn = sqlite3.connect("./Back/data-shop.db")
+    conn = sqlite3.connect("./Online-shop/Back/data-shop.db")
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -84,6 +84,16 @@ def delete_user(user_id):
     cur.execute('DELETE FROM Users WHERE user_id = ?', (user_id,))
     conn.commit()
     conn.close()
+def login_user(user_name,Password):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    password_hash = md5(Password.encode()).hexdigest()
+    cur.execute('SELECT * FROM Users WHERE username = ? and password_hash = ?', (user_name,password_hash,))
+    user_data = cur.fetchone()
+    if user_data:
+        return "ok"
+    else : 
+        return "mousavi"
 
 # users CRUD routes
 @app.route('/Users', methods=['GET'])
@@ -109,7 +119,10 @@ def add_customer():
     Role = request.json['Role']
     address = request.json['address']
     user_id = create_user(name, Password, Email, Phone, Role,address)
-    return jsonify(get_users(user_id)), 201
+    if user_id:
+        return jsonify(get_users(user_id)), 201
+    else:
+        return jsonify("NO")
 @app.route('/Users/<int:user_id>', methods=['PUT'])
 def update_user_by_id(user_id):
     name = request.json['Name']
@@ -126,6 +139,13 @@ def delete_user_by_id(user_id):
     delete_user(user_id)
     return jsonify({"id":user_id}), 200
 
+@app.route('/Users/login', methods=['POST'])
+def login_users():
+    user_name = request.json['user_name']
+    password = request.json['password']
+    response = login_user(user_name, password)
+    return jsonify(response)
+
 #-----------------user---------------------------
 
 
@@ -140,7 +160,7 @@ def get_all_Categories():
     final_Categories = []
     for Categorie in Categories:
         final_Categories.append({
-            "category_id": Categorie[0],
+            "id": Categorie[0],
             "name": Categorie[1],
             "description": Categorie[2],
             "parent_category_id": Categorie[3],
@@ -154,8 +174,9 @@ def create_Categories(name, description, parent_category_id):
     created_at = datetime.today().strftime('%Y-%m-%d')
     cur.execute('INSERT INTO Categories (name, description,parent_category_id,created_at) VALUES (?, ?, ?, ?)', (name, description, parent_category_id, created_at))
     conn.commit()
+    Category_id = cur.lastrowid
     conn.close()
-    return "ok"
+    return get_Categories(Category_id)
 def get_Categories(id):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -163,7 +184,7 @@ def get_Categories(id):
     Categorie = cur.fetchone()
     conn.close()
     final_category = {
-        "category_id": Categorie[0],
+        "id": Categorie[0],
         "name": Categorie[1],
         "description": Categorie[2],
         "parent_category_id": Categorie[3],
@@ -192,7 +213,12 @@ def list_Categories():
     response.headers['Access-Control-Expose-Headers'] = 'Content-Range'
     response.headers['Content-Range'] = len(Categories)
     return response
-@app.route('/Category/<int:id>', methods=['GET'])
+
+# @app.route('/parent_categories', methods=['GET'])
+# def parent_categories():
+#     return "arr"
+
+@app.route('/Categories/<int:id>', methods=['GET'])
 def Category(id):
     Category = get_Categories(id)
     if Category is None:
@@ -204,8 +230,8 @@ def add_Categories():
     description = request.json['description']
     parent_category_id = request.json['parent_category_id']
     Categories_id = create_Categories(name, description, parent_category_id)
-    return "ok", 201
-@app.route('/Category/<int:id>', methods=['DELETE'])
+    return Categories_id , 201
+@app.route('/Categories/<int:id>', methods=['DELETE'])
 def delete_category_by_id(id):
     delete_category(id)
     return jsonify({"id":id}), 200
@@ -229,9 +255,9 @@ def get_all_orders():
     final_orders = []
     for order in orders:
         final_orders.append({
-            "order_id": order[0],
+            "id": order[0],
             "user_id": order[1],
-            "order_date": order[2].strftime('%Y-%m-%d %H:%M:%S'),
+            "order_date": order[2],
             "total_amount": order[3],
             "status": order[4],
     })
@@ -240,11 +266,11 @@ def get_all_orders():
 def create_order(user_id, order_date, total_amount, status):
     conn = get_db_connection()
     cur = conn.cursor()
-    order_date_str = order_date.strftime('%Y-%m-%d %H:%M:%S')
-    cur.execute('INSERT INTO Orders (customer_id, order_date, total_amount, status) VALUES (?, ?, ?, ?)', (user_id, order_date_str, total_amount, status))
+    cur.execute('INSERT INTO Orders (user_id, order_date, total_amount, status) VALUES (?, ?, ?, ?)', (user_id, order_date, total_amount, status))
     conn.commit()
+    current_id = cur.lastrowid
     conn.close()
-    return "ok"
+    return current_id
 def get_order(order_id):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -253,13 +279,15 @@ def get_order(order_id):
     conn.close()
     if order is None:
         return None
-    return {
-        "order_id": order[0],
+    order_data = {
+        "id": order[0],
         "user_id": order[1],
-        "order_date": order[2].strftime('%Y-%m-%d %H:%M:%S'),
+        "order_date": order[2],
         "total_amount": order[3],
         "status": order[4],
     }
+    return order_data
+
 def delete_order(order_id):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -280,35 +308,38 @@ def update_order(order_id, customer_id, order_date, total_amount, status):
         update_stmt += "order_date = ?, "
         update_params.append(order_date_str)        
 #order crud routes
-@app.route('/orders', methods=['GET'])
+@app.route('/Orders', methods=['GET'])
 def list_orders():
     orders = get_all_orders()
     response = jsonify(orders)
     response.headers['Access-Control-Expose-Headers'] = 'Content-Range'
     response.headers['Content-Range'] = len(orders)
     return response
-@app.route('/Order/<int:order_id>', methods=['GET'])
+
+@app.route('/Orders/<int:order_id>', methods=['GET'])
 def order(order_id):
     order = get_order(order_id)
     if order is None:
         return '', 404
-    return jsonify(order), 200
+    return order, 201
+
 @app.route('/Orders', methods=['POST'])
 def add_order():
-    user_id = request.json['customer_id']
-    order_date_str = request.json['order_date']
-    order_date = datetime.strptime(order_date_str, '%Y-%m-%d %H:%M:%S')
+    user_id = request.json['user_id']
+    order_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
     total_amount = request.json['total_amount']
     status = request.json['status']
     order_id = create_order(user_id, order_date, total_amount, status)
-    return jsonify({"order_id": order_id}), 201
-@app.route('/Order/<int:order_id>', methods=['DELETE'])
+    return get_order(order_id), 201
+
+@app.route('/Orders/<int:order_id>', methods=['DELETE'])
 def delete_order_by_id(order_id):
     delete_order(order_id)
     return jsonify({"id": order_id}), 200
-@app.route('/Order/<int:order_id>', methods=['PUT'])
+
+@app.route('/Orders/<int:order_id>', methods=['PUT'])
 def update_order_by_id(order_id):
-    user_id = request.json['customer_id']
+    user_id = request.json['user_id']
     order_date_str = request.json['order_date']
     order_date = datetime.strptime(order_date_str, '%Y-%m-%d %H:%M:%S')
     total_amount = request.json['total_amount']
@@ -317,3 +348,102 @@ def update_order_by_id(order_id):
     return jsonify(updated_order), 200
 
 #------------------order--------------------------
+
+# -----------------------order-detail---------------------------------
+
+#order-detail crud function
+def get_all_orderDetail():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM OrderDetails')
+    details = cur.fetchall()
+    final_details = []
+    for detail in details:
+        final_details.append({
+            "id": detail[0],
+            "order_id": detail[1],
+            "product_id": detail[2],
+            "quantity": detail[3],
+            "unit_price": detail[4],
+        })
+    conn.close()
+    return final_details
+
+def get_details(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM OrderDetails WHERE order_detail_id = ?',(id,))
+    detail = cur.fetchone()
+    conn.close()
+    final_details = {
+            "id": detail[0],
+            "order_id": detail[1],
+            "product_id": detail[2],
+            "quantity": detail[3],
+            "unit_price": detail[4],
+    }
+    return final_details
+
+def create_detail(order_id,quantity,unit_price):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO OrderDetails (order_id,quantity,unit_price) VALUES ( ?, ?,?)', (order_id,quantity,unit_price,))
+    conn.commit()
+    current_id = cur.lastrowid
+    conn.close()
+    return current_id
+
+def delete_detail(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('DELETE FROM OrderDetails WHERE order_detail_id = ?', (id,))
+    conn.commit()
+    conn.close()
+    
+def update_detail(order_id, product_id,quantity,unit_price,id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('UPDATE OrderDetails SET order_id = ?, product_id = ?, quantity = ?, unit_price = ? WHERE order_detail_id = ?', (order_id, product_id,quantity,unit_price,id))
+    conn.commit()
+    conn.close()
+    return get_details(id)
+
+# order-detail routes
+@app.route('/Order_Details', methods=['GET'])
+def list_details():
+    details = get_all_orderDetail()
+    response = jsonify(details)
+    response.headers['Access-Control-Expose-Headers'] = 'Content-Range'
+    response.headers['Content-Range'] = len(details)
+    return response
+
+@app.route('/Order_Details/<int:id>', methods=['GET'])
+def detail(id):
+    detail = get_details(id)
+    if detail is None:
+        return '', 404
+    return jsonify(detail), 200
+
+@app.route('/Order_Details', methods=['POST'])
+def add_details():
+    order_id = request.json['order_id']
+    # product_id = request.json['product_id']
+    quantity = request.json['quantity']
+    unit_price = request.json['unit_price']
+    detail_id = create_detail(order_id, quantity,unit_price)
+    return get_details(detail_id), 200
+
+@app.route('/Order_Details/<int:id>', methods=['DELETE'])
+def delete_detail_by_id(id):
+    delete_detail(id)
+    return jsonify({"id":id}), 200
+
+@app.route('/Order_Details/<int:id>', methods=['PUT'])
+def update_detail_by_id(id):
+    order_id = request.json['order_id']
+    product_id = request.json['product_id']
+    quantity = request.json['quantity']
+    unit_price = request.json['unit_price']
+    updated = update_detail(order_id, product_id, quantity,unit_price,id)
+    return jsonify(updated), 200
+
