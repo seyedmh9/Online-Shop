@@ -854,3 +854,90 @@ def update_AdminLog_by_id(id):
     action = request.json['action']
     updated = update_AdminLog(user_id,action,id)
     return jsonify(updated), 200
+
+
+
+#-------------------------------------------------
+# product
+# data = request.get_json()
+# image = request.files['image']
+
+# conn = get_db_connection()
+# img_binary = io.BytesIO(image.read())
+
+# cursor = conn.cursor()
+# cursor.execute("INSERT INTO Products (name, description, price, category_id, picture) VALUES (?, ?, ?, ?, ?)",
+# (data['name'], data['description'], data['price'], data['category_id'], img_binary.getvalue()))
+# conn.commit()
+# product_id = cursor.lastrowid
+# conn.close()
+
+# return jsonify(get_product(product_id)), 201
+
+# products
+# def get_all_products():
+#     conn = get_db_connection()
+#     cur = conn.cursor()
+#     cur.execute('SELECT * FROM Products')
+#     products = cur.fetchall()
+#     final_products = []
+#     for product in products:
+#         final_products.append({
+#             "product_id": product[0],
+#             "name": product[1],
+#             "description": product[2],
+#             "price": product[3],
+#             "category_id": product[4],
+#             "picture": product[5],
+#         })
+#     conn.close()
+#     return final_products
+
+
+# def get_product(product_id):
+#     conn = get_db_connection()
+#     cur = conn.cursor()
+#     cur.execute("SELECT * FROM Products WHERE product_id = ?", (product_id,))
+#     product = cur.fetchone()
+#     conn.close()
+#     return {
+#         'product_id': product[0],
+#         'name': product[1],
+#         'description': product[2],
+#         'price': product[3],
+#         'category_id': product[4],
+#         'picture': product[5]
+#     }
+# def update_product(id,name, description, price, category_id, picture):
+# conn = get_db_connection()
+# cur = conn.cursor()
+# cur.execute('UPDATE Products SET name = ?, description = ?, price = ?, category_id = ?, picture_path = ? WHERE product_id = ?', (name, description, price, category_id, picture,id))
+# conn.commit()
+# conn.close()
+# return get_product(id)
+
+# def create_product(name, description, price, category_id, picture):
+#     conn = get_db_connection()
+#     cur = conn.cursor()
+#     rnd = random.randint(1,50000)
+#     picture.save("./pics/"+ str(rnd) + ".jpg")
+#     picture_path = "./pics/" + str(rnd) + ".jpg"
+#     cur.execute('INSERT INTO Products (name, description,price,category_id,picture_path) VALUES (?, ?, ?, ? , ? )', (name, description, price, category_id,picture_path))
+#     conn.commit()
+#     product_id = cur.lastrowid
+#     conn.close()
+#     return product_id
+
+# @app.route('/Products', methods=['POST'])
+# def add_product():
+#     name = request.json['name']
+#     description = request.json['description']
+#     price = request.json['price']
+#     category_id = request.json['category_id']
+#     picture = request.files['picture']
+#     create_product(name, description, price, category_id,picture)
+#     return "ok"
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
