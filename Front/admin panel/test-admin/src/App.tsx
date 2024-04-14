@@ -74,5 +74,12 @@ export const App = () => (
       show={ShowGuesser}
       create={Feedback_Creat}
     />
+    <Resource
+      name="Products"
+      list={Product_list}
+      edit={EditGuesser}
+      show={ShowGuesser}
+      create={Products_Creat}
+    />
   </Admin>
 );
