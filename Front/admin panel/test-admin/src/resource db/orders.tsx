@@ -12,7 +12,8 @@ import {
     EmailField,
     DateField,
     ReferenceField,
-    ShowButton
+    ShowButton,
+    DeleteButton
 } from 'react-admin';
 import { Stack } from '@mui/material';
 
@@ -39,6 +40,7 @@ export const OrdersList = () => (
             <TextField source="total_amount" />
             <TextField source="status" />
             <ShowButton label="Show"/>
+            <DeleteButton label="Delete"/>
         </Datagrid>
     </List>
 );
