@@ -447,3 +447,100 @@ def update_detail_by_id(id):
     updated = update_detail(order_id, product_id, quantity,unit_price,id)
     return jsonify(updated), 200
 
+# ---------------------payment-----------------------
+
+#Payments crud function
+def get_all_Payments():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM Payments')
+    Payments = cur.fetchall()
+    final_Payments = []
+    for Payment in Payments:
+        final_Payments.append({
+            "id": Payment[0],
+            "order_id": Payment[1],
+            "payment_method": Payment[2],
+            "amount": Payment[3],
+            "payment_date": Payment[4],
+        })
+    conn.close()
+    return final_Payments
+
+def get_Payment(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM Payments WHERE payment_id = ?',(id,))
+    Payment = cur.fetchone()
+    conn.close()
+    final_Payment = {
+        "id": Payment[0],
+        "order_id": Payment[1],
+        "payment_method": Payment[2],
+        "amount": Payment[3],
+        "payment_date": Payment[4]
+    }
+    return final_Payment
+
+def create_one_payment(order_id, payment_method, amount): 
+    conn = get_db_connection() 
+    cur = conn.cursor() 
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+    cur.execute('INSERT INTO Payments (order_id, payment_method, amount, payment_date) VALUES (?, ?, ?, ?)', (order_id, payment_method, amount, current_datetime)) 
+    conn.commit() 
+    payment_id = cur.lastrowid
+    conn.close() 
+    return payment_id
+
+def delete_payment(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('DELETE FROM Payments WHERE payment_id = ?', (id,))
+    conn.commit()
+    conn.close()
+
+def update_payment(order_id, payment_method, amount,id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('UPDATE Payments SET order_id = ?, payment_method = ?, amount = ? WHERE payment_id = ?', (order_id,payment_method,amount,id))
+    conn.commit()
+    conn.close()
+    return get_Payment(id)
+
+# Payments routes
+@app.route('/Payments', methods=['GET'])
+def list_Payments():
+    Payments = get_all_Payments()
+    response = jsonify(Payments)
+    response.headers['Access-Control-Expose-Headers'] = 'Content-Range'
+    response.headers['Content-Range'] = len(Payments)
+    return response
+
+@app.route('/Payments/<int:id>', methods=['GET'])
+def Payment(id):
+    Payments = get_Payment(id)
+    if Payments is None:
+        return '', 404
+    return jsonify(Payments), 200
+
+@app.route('/Payments', methods=['POST'])
+def create_payment(): 
+    order_id = request.json['id']
+    payment_method = request.json['payment_method'] 
+    amount = request.json['amount'] 
+    id = create_one_payment(order_id, payment_method,amount)
+    return jsonify(get_Payment(id))
+
+@app.route('/Payments/<int:id>', methods=['DELETE'])
+def delete_payment_by_id(id):
+    delete_payment(id)
+    return jsonify({"id":id}), 200
+
+@app.route('/Payments/<int:id>', methods=['PUT'])
+def update_payment_by_id(id):
+    data = request.get_json() 
+    order_id = data['order_id']
+    payment_method = data['payment_method'] 
+    amount = data['amount'] 
+    updated = update_payment(order_id, payment_method, amount,id)
+    return jsonify(updated), 200
