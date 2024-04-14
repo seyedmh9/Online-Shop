@@ -81,5 +81,11 @@ export const App = () => (
       show={ShowGuesser}
       create={Products_Creat}
     />
+    <Resource
+      name="Admin Logs"
+      list={ListGuesser}
+      edit={EditGuesser}
+      show={ShowGuesser}
+    />
   </Admin>
 );
