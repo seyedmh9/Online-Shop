@@ -38,6 +38,7 @@ export const Feedback_List = () => (
             <TextField source="rating" />
             <TextField source="comment" />
             <DateField source="feedback_date" />
+            <ShowButton label="Show"/>
         </Datagrid>
     </List>
 );
