@@ -40,6 +40,7 @@ export const CategoryList = () => (
             <ReferenceField source="parent_category_id" reference="Categories" link="show" />
             <DateField source="created_at" />
             <ShowButton label="Show"/>
+            <DeleteButton label="Delete"/>
         </Datagrid>
     </List>
 );
