@@ -22,7 +22,7 @@ import { Payment_Creat } from "./resource db/PaymentCreate";
 import { Feedback_List } from "./resource db/Feedback_list";
 import { Feedback_Creat } from "./resource db/Feedback_Create";
 import { Product_list } from "./resource db/Products";
-import { Products_Creat } from "./resource db/Products_Create";
+import { ProductCreate } from "./resource db/Products_Create";
 export const App = () => (
   <Admin dataProvider={dataProvider} authProvider={authProvider}>
     <Resource
@@ -79,7 +79,7 @@ export const App = () => (
       list={Product_list}
       edit={EditGuesser}
       show={ShowGuesser}
-      create={Products_Creat}
+      create={ProductCreate}
     />
     <Resource
       name="Admin Logs"

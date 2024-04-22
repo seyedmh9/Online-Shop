@@ -12,7 +12,8 @@ import {
     EmailField,
     DateField,
     ShowButton,
-    DeleteButton
+    DeleteButton,
+    ImageField
   } from "react-admin";
   import { Stack } from "@mui/material";
   
@@ -38,7 +39,7 @@ import {
         <TextField source="description" />
         <TextField source="price" />
         <TextField source="category_id" />
-        <TextField source="picture" />
+        <ImageField source="picture" />
         <ShowButton label="Show"/>
         <DeleteButton label="Delete"/>
       </Datagrid>

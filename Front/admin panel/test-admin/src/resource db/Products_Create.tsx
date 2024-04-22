@@ -1,13 +1,20 @@
 import * as React from 'react';
-import { Create, SimpleForm, TextInput, DateInput, required } from 'react-admin';
+import { Create, SimpleForm, TextInput, DateInput, required ,NumberInput,
+    ImageInput , ImageField} from 'react-admin';
 
-export const Products_Creat = () => (
-    <Create>
-        <SimpleForm>
-            <TextInput source="name" validate={[required()]} />
-            <TextInput source="description" multiline={true}/>
-            <TextInput source="category_id"/>
-            <TextInput source="picture"/>
-        </SimpleForm>
-    </Create>
-);
+export const ProductCreate = (props:any) => (
+<Create{...props}>
+    <SimpleForm>
+        <TextInput source="name" validate={[required()]} />
+        <TextInput multiline source="description" validate={[required()]} />
+        <TextInput source="price" validate={[required()]} />
+        <TextInput source="category_id" validate={[required()]}  />
+        <ImageInput source="picture" accept="image/*">
+            <ImageField source="src" title="title" />
+        </ImageInput>
+    </SimpleForm>
+</Create>
+)
+
+
+

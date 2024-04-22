@@ -1,4 +1,4 @@
-from flask import Flask, jsonify , request
+from flask import Flask, jsonify , request , render_template
 import sqlite3
 from flask_cors import CORS, cross_origin
 import io
@@ -6,6 +6,8 @@ from datetime import datetime
 from fileinput import filename 
 from hashlib import md5
 import random
+from flask import *
+import base64
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -19,8 +21,38 @@ def get_db_connection():
 
 # back test
 @app.route('/',methods=['GET'])
-def test():
-    return "ok"
+def home():
+    return render_template('index.html')
+
+@app.route('/login.html',methods=['GET','POST'])
+def login():
+    if request.method == 'POST':
+        user_name = request.form.get['user_name']
+        password = request.form.get['password']
+    response = login_user(user_name, password)
+    if response == "ok":
+        return redirect(url_for('home'))
+    return render_template('login.html')
+
+def login_user(user_name,Password):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    password_hash = md5(Password.encode()).hexdigest()
+    cur.execute('SELECT * FROM Users WHERE username = ? and password_hash = ?', (user_name,password_hash,))
+    user_data = cur.fetchone()
+    if user_data:
+        return "ok"
+    else : 
+        return "mousavi"
+    
+
+# @app.route('/Users/login/', methods=['POST'])
+# def login_users():
+    
+
+
+
+
 
 #-----------------user---------------------------
 
@@ -84,16 +116,6 @@ def delete_user(user_id):
     cur.execute('DELETE FROM Users WHERE user_id = ?', (user_id,))
     conn.commit()
     conn.close()
-def login_user(user_name,Password):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    password_hash = md5(Password.encode()).hexdigest()
-    cur.execute('SELECT * FROM Users WHERE username = ? and password_hash = ?', (user_name,password_hash,))
-    user_data = cur.fetchone()
-    if user_data:
-        return "ok"
-    else : 
-        return "mousavi"
 
 # users CRUD routes
 @app.route('/Users', methods=['GET'])
@@ -139,12 +161,7 @@ def delete_user_by_id(user_id):
     delete_user(user_id)
     return jsonify({"id":user_id}), 200
 
-@app.route('/Users/login', methods=['POST'])
-def login_users():
-    user_name = request.json['user_name']
-    password = request.json['password']
-    response = login_user(user_name, password)
-    return jsonify(response)
+
 
 #-----------------user---------------------------
 
@@ -872,69 +889,104 @@ def update_AdminLog_by_id(id):
 # return jsonify(get_product(product_id)), 201
 
 # products
-# def get_all_products():
-#     conn = get_db_connection()
-#     cur = conn.cursor()
-#     cur.execute('SELECT * FROM Products')
-#     products = cur.fetchall()
-#     final_products = []
-#     for product in products:
-#         final_products.append({
-#             "product_id": product[0],
-#             "name": product[1],
-#             "description": product[2],
-#             "price": product[3],
-#             "category_id": product[4],
-#             "picture": product[5],
-#         })
-#     conn.close()
-#     return final_products
+def get_all_products():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM Products')
+    products = cur.fetchall()
+    final_products = []
+    for product in products:
+        final_products.append({
+            "id": product[0],
+            "name": product[1],
+            "description": product[2],
+            "price": product[3],
+            "category_id": product[4],
+            "picture": product[5],
+        })
+    conn.close()
+    return final_products
 
 
-# def get_product(product_id):
-#     conn = get_db_connection()
-#     cur = conn.cursor()
-#     cur.execute("SELECT * FROM Products WHERE product_id = ?", (product_id,))
-#     product = cur.fetchone()
-#     conn.close()
-#     return {
-#         'product_id': product[0],
-#         'name': product[1],
-#         'description': product[2],
-#         'price': product[3],
-#         'category_id': product[4],
-#         'picture': product[5]
-#     }
-# def update_product(id,name, description, price, category_id, picture):
-# conn = get_db_connection()
-# cur = conn.cursor()
-# cur.execute('UPDATE Products SET name = ?, description = ?, price = ?, category_id = ?, picture_path = ? WHERE product_id = ?', (name, description, price, category_id, picture,id))
-# conn.commit()
-# conn.close()
-# return get_product(id)
+def get_product(product_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM Products WHERE product_id = ?", (product_id,))
+    product = cur.fetchone()
+    conn.close()
+    return {
+        'product_id': product[0],
+        'name': product[1],
+        'description': product[2],
+        'price': product[3],
+        'category_id': product[4],
+        'picture': product[5]
+    }
+def update_product(id,name, description, price, category_id, picture):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('UPDATE Products SET name = ?, description = ?, price = ?, category_id = ?, picture_path = ? WHERE product_id = ?', (name, description, price, category_id, picture,id))
+    conn.commit()
+    conn.close()
+    return get_product(id)
 
-# def create_product(name, description, price, category_id, picture):
-#     conn = get_db_connection()
-#     cur = conn.cursor()
-#     rnd = random.randint(1,50000)
-#     picture.save("./pics/"+ str(rnd) + ".jpg")
-#     picture_path = "./pics/" + str(rnd) + ".jpg"
-#     cur.execute('INSERT INTO Products (name, description,price,category_id,picture_path) VALUES (?, ?, ?, ? , ? )', (name, description, price, category_id,picture_path))
-#     conn.commit()
-#     product_id = cur.lastrowid
-#     conn.close()
-#     return product_id
+def create_product(name, description, price, category_id, picture):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    rnd = random.randint(1,50000)
+    picture.save("./pics/"+ str(rnd) + ".jpg")
+    picture_path = "./pics/" + str(rnd) + ".jpg"
+    cur.execute('INSERT INTO Products (name, description,price,category_id,picture_path) VALUES (?, ?, ?, ? , ? )', (name, description, price, category_id,picture_path))
+    conn.commit()
+    product_id = cur.lastrowid
+    conn.close()
+    return product_id
+
+
+
+@app.route('/Products', methods=['GET'])
+def list_Products():
+    Products = get_all_products()
+    response = jsonify(Products)
+    response.headers['Access-Control-Expose-Headers'] = 'Content-Range'
+    response.headers['Content-Range'] = len(Products)
+    return response
+
 
 # @app.route('/Products', methods=['POST'])
 # def add_product():
-#     name = request.json['name']
-#     description = request.json['description']
-#     price = request.json['price']
-#     category_id = request.json['category_id']
-#     picture = request.files['picture']
-#     create_product(name, description, price, category_id,picture)
-#     return "ok"
+#     name = request.form.get('name')
+#     description = request.form.get('description')
+#     price = request.form.get('price')
+#     category_id = request.form.get('category_id')
+#     print(name, description, price, category_id)
+#     file = request.files['picture']
+#     return "OK"
 
+
+    
+    # if file:
+        # filename = secure_filename(file.filename)
+        # file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    # else:
+        # return jsonify({'error': 'No image provided'}), 400
+
+
+# def add_product(current_user):
+#     file = request.files['image']
+#     if file:
+#         filename = secure_filename(file.filename)
+#         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+#     else:
+#         return jsonify({'error': 'No image provided'}), 400
+
+#     new_product = Product(
+#         name=request.form['name'],
+#         description=request.form['description'],
+#         price=request.form['price'],
+#         category_id=request.form['category_id'],
+#         image=filename  # Save the path as needed
+#     )
 
 if __name__ == '__main__':
     app.run(debug=True)
